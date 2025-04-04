@@ -49,6 +49,33 @@
       margin-top: 10px;
       background-color: #333;
     }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .row {
+      display: flex;
+    }
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      font-size: 24px;
+      text-align: center;
+      background: #4CAF50;
+      border: none;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -74,9 +101,14 @@
     <button id="restartBtn">Restart</button>
   </div>
   <canvas id="gameCanvas" width="400" height="400"></canvas>
-  <audio id="bgMusic" loop>
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-  </audio>
+  <div class="controls">
+    <button class="control-btn" id="up">⬆</button>
+    <div class="row">
+      <button class="control-btn" id="left">⬅</button>
+      <button class="control-btn" id="down">⬇</button>
+      <button class="control-btn" id="right">➡</button>
+    </div>
+  </div>
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -84,16 +116,16 @@
     const gameOverScreen = document.getElementById("gameOverScreen");
     const startBtn = document.getElementById("startBtn");
     const restartBtn = document.getElementById("restartBtn");
-    const gameOverText = document.getElementById("gameOverText");
-    const bgMusic = document.getElementById("bgMusic");
     const difficultySelect = document.getElementById("difficulty");
     const difficultyRestart = document.getElementById("difficultyRestart");
-
-    const gridSize = 20;
-    const tileCount = canvas.width / gridSize;
-
+    
+    const upBtn = document.getElementById("up");
+    const downBtn = document.getElementById("down");
+    const leftBtn = document.getElementById("left");
+    const rightBtn = document.getElementById("right");
+    
     let snake, velocity, food, score, highScore = 0, gameStarted, gameSpeed;
-
+    
     function resetGame() {
       snake = [{x: 10, y: 10}];
       velocity = {x: 1, y: 0};
@@ -101,7 +133,7 @@
       score = 0;
       gameStarted = true;
     }
-
+    
     function changeDirection(dir) {
       switch(dir) {
         case "up": if (velocity.y === 0) velocity = {x: 0, y: -1}; break;
@@ -119,94 +151,11 @@
         case "ArrowRight": changeDirection("right"); break;
       }
     });
-
-    startBtn.addEventListener("click", () => {
-      gameSpeed = parseInt(difficultySelect.value);
-      startScreen.style.display = "none";
-      bgMusic.play();
-      resetGame();
-      gameLoop();
-    });
-
-    restartBtn.addEventListener("click", () => {
-      gameSpeed = parseInt(difficultyRestart.value);
-      gameOverScreen.style.display = "none";
-      bgMusic.currentTime = 0;
-      bgMusic.play();
-      resetGame();
-      gameLoop();
-    });
-
-    function gameLoop() {
-      if (!gameStarted) return;
-
-      const head = {...snake[0]};
-      head.x += velocity.x;
-      head.y += velocity.y;
-
-      if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-        return gameOver();
-      }
-
-      for (let part of snake) {
-        if (part.x === head.x && part.y === head.y) {
-          return gameOver();
-        }
-      }
-
-      snake.unshift(head);
-
-      if (head.x === food.x && head.y === food.y) {
-        score++;
-        if (score > highScore) highScore = score;
-        food = {
-          x: Math.floor(Math.random() * tileCount),
-          y: Math.floor(Math.random() * tileCount)
-        };
-      } else {
-        snake.pop();
-      }
-
-      draw();
-      setTimeout(gameLoop, gameSpeed);
-    }
-
-    function draw() {
-      ctx.fillStyle = "#111";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "lime";
-      for (let part of snake) {
-        ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize-2, gridSize-2);
-      }
-
-      ctx.fillStyle = "red";
-      ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize-2, gridSize-2);
-
-      ctx.fillStyle = "white";
-      ctx.font = "16px Arial";
-      ctx.fillText("Score: " + score, 10, 20);
-      ctx.fillText("High Score: " + highScore, 10, 40);
-    }
-
-    function gameOver() {
-      gameStarted = false;
-      bgMusic.pause();
-      gameOverText.textContent = `Game Over! Your score was: ${score}. High score: ${highScore}`;
-      gameOverScreen.style.display = "flex";
-    }
-
-    // 🌞🌙 Day/Night Mode Logic
-    function setThemeByTime() {
-      const hour = new Date().getHours();
-      if (hour >= 6 && hour < 18) {
-        document.body.style.background = 'linear-gradient(135deg, #89f7fe, #66a6ff)';
-      } else {
-        document.body.style.background = 'linear-gradient(135deg, #1e3c72, #2a5298)';
-      }
-    }
-
-    setThemeByTime();
+    
+    upBtn.addEventListener("click", () => changeDirection("up"));
+    downBtn.addEventListener("click", () => changeDirection("down"));
+    leftBtn.addEventListener("click", () => changeDirection("left"));
+    rightBtn.addEventListener("click", () => changeDirection("right"));
   </script>
 </body>
 </html>
